@@ -12,11 +12,11 @@ import time
 ##############################
 scl_pi=26
 sda_pin=25
-temp_addr=41
-measure_humidity = 0xF5
-measure_temp = 0xF3
-read_temp = 0xE0
-result = bytearray(2)
+temp_addr = const(0x40)
+measure_humidity = const(0xF5)
+measure_temp = const(0xF3)
+read_temp = const(0xE0)
+#result = bytearray(2)
 
 ##############################
 # Configurations
@@ -27,8 +27,8 @@ i2c = I2C(scl=Pin(scl_pi), sda=Pin(sda_pin))
 ##############################
 # Subroutines
 ##############################
-def _getWord(high, low):
-    return ((high & 0xFF) << 8) + (low & 0xFF)
+#def _getWord(high, low):
+#    return ((high & 0xFF) << 8) + (low & 0xFF)
 
 ##############################
 # Main
@@ -41,32 +41,43 @@ print(addresses_found)
 
 # Get Firmware Version
 i2c.writeto(temp_addr, bytearray([0x84])+ bytearray([0xB8]))
-time.sleep(0.5)
+time.sleep(1)
 fw = i2c.readfrom(temp_addr, 1)
 print('Firmware = ')
-print(fw)
+print(fw[0])
 
 # Read Humidity
-print('Requesting Humididty Measurement...')
-i2c.writeto(temp_addr, bytearray([measure_humidity]))
-time.sleep(1)
-result = i2c.readfrom(temp_addr, 3)
-result = _getWord(result[0], result[1])
+print('Requesting Measurement...')
+#i2c.writeto(temp_addr, bytearray(measure_humidity))
+i2c.writeto(temp_addr, bytearray([0xF5]))
+time.sleep(0.5)
+print('Getting Humidity...')
+hum = i2c.readfrom(temp_addr, 1)
 print('Humidity = ')
-print(result)
+print(hum[0])
+
+
+# this is erroring saing that there is no device when doing humidity, but the code works for firmware
+#  so there shouldn't be any issue. it might be that the sensor is not ready in time, OR the data has
+#  gone stale by the time I request it.  Sometimes this code works.... I have tried 0.5, 1 and 1.5 
+#  second delays and it doesn't make much difference. FYI firmware ALWAYS works.
+
 
 # Read Temperature
-print('Requesting Temperature Measurement...')
-i2c.writeto(temp_addr, bytearray([measure_temp]))
-time.sleep(1)
-result = i2c.readfrom(temp_addr, 3)
-print('Temp = ')
-print(result)
-print('Requesting Temperature Result...')
-i2c.writeto(temp_addr, bytearray([read_temp]))
-result = i2c.readfrom(temp_addr, 3)
-print('Temp2 = ')
-print(result)
+#print('Requesting Temperature Measurement...')
+##i2c.writeto(temp_addr, bytearray(measure_temp))
+#i2c.writeto(temp_addr, bytearray([0xF3]))
+#time.sleep(1)
+#print('Getting Temperature...')
+#temp_result = i2c.readfrom(temp_addr, 3)
+#print('Temp = ')
+#print(result[0], result[1], result[2])
+
+#print('Getting Temperature...')
+#i2c.writeto(temp_addr, bytearray([read_temp]))
+#result = i2c.readfrom(temp_addr, 3)
+#print('Temp2 = ')
+#print(result)
 
 
 
