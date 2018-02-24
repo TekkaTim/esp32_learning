@@ -4,7 +4,13 @@ from machine import I2C
 from machine import Pin
 import time
 
-i2c = I2C(scl=Pin(13), sda=Pin(12))
-bob = i2c.scan()
-print(bob)
-#i2c = I2C(scl=Pin(5), sda=Pin(4))
+scl_pi=26
+sda_pin=25
+
+i2c = I2C(scl=Pin(scl_pi), sda=Pin(sda_pin))
+
+# Scan i2c bus
+addresses_found = i2c.scan()
+print(addresses_found)
+
+
