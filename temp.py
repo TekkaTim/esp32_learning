@@ -39,22 +39,24 @@ addresses_found = i2c.scan()
 print('Found the following devices')
 print(addresses_found)
 
-# Get Firmware Version
-i2c.writeto(temp_addr, bytearray([0x84])+ bytearray([0xB8]))
-time.sleep(1)
-fw = i2c.readfrom(temp_addr, 1)
-print('Firmware = ')
-print(fw[0])
+for x in range(25):
+  # Get Firmware Version
+  i2c.writeto(temp_addr, bytearray([0x84])+ bytearray([0xB8]))
+  time.sleep(0.1)
+  fw = i2c.readfrom(temp_addr, 1)
+  print('Firmware = ')
+  print(fw[0])
+  time.sleep(1)
 
-# Read Humidity
-print('Requesting Measurement...')
-#i2c.writeto(temp_addr, bytearray(measure_humidity))
-i2c.writeto(temp_addr, bytearray([0xF5]))
-time.sleep(0.5)
-print('Getting Humidity...')
-hum = i2c.readfrom(temp_addr, 1)
-print('Humidity = ')
-print(hum[0])
+ ## Read Humidity
+ # print('Requesting Measurement...')
+ # #i2c.writeto(temp_addr, bytearray(measure_humidity))
+ # i2c.writeto(temp_addr, bytearray([0xF5]))
+ # time.sleep(0.5)
+ # #print('Getting Humidity...')
+ # hum = i2c.readfrom(temp_addr, 2)
+ # print('Humidity = ')
+ # print(hum[0])
 
 
 # this is erroring saing that there is no device when doing humidity, but the code works for firmware
@@ -63,21 +65,21 @@ print(hum[0])
 #  second delays and it doesn't make much difference. FYI firmware ALWAYS works.
 
 
-# Read Temperature
-#print('Requesting Temperature Measurement...')
-##i2c.writeto(temp_addr, bytearray(measure_temp))
-#i2c.writeto(temp_addr, bytearray([0xF3]))
-#time.sleep(1)
-#print('Getting Temperature...')
-#temp_result = i2c.readfrom(temp_addr, 3)
-#print('Temp = ')
-#print(result[0], result[1], result[2])
+  # Read Temperature
+  print('Requesting Temperature Measurement...')
+  #i2c.writeto(temp_addr, bytearray(measure_temp))
+  i2c.writeto(temp_addr, bytearray([0xF3]))
+  time.sleep(1)
+  print('Getting Temperature...')
+  temp_result = i2c.readfrom(temp_addr, 3)
+  print('Temp = ')
+  print(result)
 
-#print('Getting Temperature...')
-#i2c.writeto(temp_addr, bytearray([read_temp]))
-#result = i2c.readfrom(temp_addr, 3)
-#print('Temp2 = ')
-#print(result)
+  print('Getting Temperature...')
+  i2c.writeto(temp_addr, bytearray([read_temp]))
+  result = i2c.readfrom(temp_addr, 3)
+  print('Temp2 = ')
+  print(result)
 
 
 
