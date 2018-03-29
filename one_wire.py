@@ -7,28 +7,32 @@ from onewire import OneWire
 ow = OneWire(Pin('P10'))
 temp = DS18X20(ow)
 
-#ds = DS18X20(OneWire(Pin('P10')))
-#print('devices:', ds.roms)
-##devices: [bytearray(b'(\xff\xae8\x90\x15\x03T')]
-#print('temperatures:', ds.read_temps())
-##temperatures: [2525]
-
-
+print('Scanning the One Wire Bus....')
 devices = ow.scan()
-#roms = ds.scan()
-print('found probes:', devices)
-#print('found probes:', roms)
+
+print('The following devices have been found....')
+for device_serial_array in devices:
+  #hex_string="".join("%02x" %b for b in device_serial_array)
+  #print(hex_string)
+  device_serial="".join("%02x" % device_serial_array[c-1] for c in range(len(device_serial_array), 0, -1))
+  print("  * Serial Number = ", device_serial)
+
+
+
+#for number in devices
+#    print(devices[number])
+
  
-while True:
-    print('temperatures:', end=' ')
-    #ow.convert_temp()  
-    for device in devices:
-        temp.start_convertion(device)
-        time.sleep(1)
+#while True:
+#    print('temperatures:', end=' ')
+#    #ow.convert_temp()
+#    for device in devices:
+#        temp.start_convertion(device)
+#        time.sleep(1)
 #        ow.select_rom(device)
-#Doesnt really work for selection the sesnor, gives "bound_method" response :-(
-        print(temp.read_temp_async, end=' ')
-    print()
+##Doesnt really work for selection the sesnor, gives "bound_method" response :-(
+#        print(temp.read_temp_async, end=' ')
+#    print()
 #    time.sleep_ms(1000)
 
 
