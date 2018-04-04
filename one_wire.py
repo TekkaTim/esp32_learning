@@ -18,11 +18,12 @@ for device in devices:
   print("  * Serial Number = ", device_serial)
 
 print("Num Devices = ", num_devices)
-temp_retry=0
 
-#while True:
-for x in range(1):
+while True:
+#for x in range(1):
+  device_read=[0] * num_devices
   temp_not_done=1
+  temp_retry=0
   for device in devices:
     temp.start_convertion(device)
     time.sleep_ms(10)
@@ -35,15 +36,15 @@ for x in range(1):
     for i in range(0,num_devices):
       if (device_read[i]!= 1):
         temp_data = (temp.read_temp_async(devices[i]))
-        print("temp_data #", i, " = ", temp_data)
+        #print("temp_data #", i, " = ", temp_data)
         if (temp_data != None):
-          print("here")
           temperatures[i] = temp_data
           device_read[i] = 1
       time.sleep_ms(100)
     if ( sum(device_read) == num_devices ):
       break
-
+  for sensor_num in range(0,len(temperatures)):
+    print("Temp ", sensor_num, " = ", temperatures[sensor_num])
 
   #device_read=[0] * num_devices
 
