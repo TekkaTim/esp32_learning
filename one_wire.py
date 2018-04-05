@@ -11,16 +11,26 @@ devices = ow.scan()
 num_devices=len(devices)
 device_read=[0] * num_devices
 temperatures=[0] * num_devices
+serials = [bytearray(b'\x28\x89\x74\x29\x07\x00\x00\x89'),
+           bytearray(b'\x28\xb3\x31\x29\x07\x00\x00\x90')]
+front_id=0
+back_id=0
 
 print('The following devices have been found....')
 for device in devices:
   device_serial="".join("%02x" % device[c-1] for c in range(len(device), 0, -1))
   print("  * Serial Number = ", device_serial)
 
-print("Num Devices = ", num_devices)
+#for serial in serials:
+#  device_serial="".join("%02x" % serial[c-1] for c in range(len(serial), 0, -1))
+#  print("  * My Serial Number = ", device_serial)
 
-while True:
-#for x in range(1):
+print("Num Devices = ", num_devices)
+print(serials[0] in devices)
+print(serials[1] in devices)
+
+#while True:
+for x in range(1):
   device_read=[0] * num_devices
   temp_not_done=1
   temp_retry=0
