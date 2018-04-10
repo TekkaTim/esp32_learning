@@ -3,73 +3,62 @@ from machine import Pin
 from onewire import DS18X20
 from onewire import OneWire
 
+##########################
+# Subroutines
+##########################
+
+def Calc_Temp(centicelcius):
+  Correct_Temp=centicelcius/100
+  return Correct_Temp
+
 #DS18B20 data line connected to pin P10
 ow = OneWire(Pin('P10'))
 temp = DS18X20(ow)
+temp_serials = {"Front" : bytearray(b'\x28\x89\x74\x29\x07\x00\x00\x89'),
+                "Back"  : bytearray(b'\x28\xb3\x31\x29\x07\x00\x00\x90')}
+num_devices=len(temp_serials)
+temperature = { "Front" : 0,
+                "Back"  : 0}
+device_read = { "Front" : 0,
+                "Back"  : 0}
+
 print('Scanning the One Wire Bus....')
 devices = ow.scan()
-num_devices=len(devices)
-device_read=[0] * num_devices
-temperatures=[0] * num_devices
-serials = [bytearray(b'\x28\x89\x74\x29\x07\x00\x00\x89'),
-           bytearray(b'\x28\xb3\x31\x29\x07\x00\x00\x90')]
-front_id=0
-back_id=0
+num_devices_found=len(devices)
 
-print('The following devices have been found....')
-for device in devices:
-  device_serial="".join("%02x" % device[c-1] for c in range(len(device), 0, -1))
-  print("  * Serial Number = ", device_serial)
 
-#for serial in serials:
-#  device_serial="".join("%02x" % serial[c-1] for c in range(len(serial), 0, -1))
-#  print("  * My Serial Number = ", device_serial)
+print('Looking for the following devices....')
+for key in temp_serials:
+  sensor_found="Missing"
+  if temp_serials[key] in devices: sensor_found="Available"
+  device_serial="".join("%02x" % temp_serials[key][c-1] for c in range(len(temp_serials[key]), 0, -1))
+  print("  * ", key, " Serial Number = ", device_serial, " (",sensor_found,")")
 
-print("Num Devices = ", num_devices)
-print(serials[0] in devices)
-print(serials[1] in devices)
+# PUT IN A CHECK FOR NEW DEVICES
 
-#while True:
-for x in range(1):
-  device_read=[0] * num_devices
+while True:
+#for x in range(1):
   temp_not_done=1
   temp_retry=0
-  for device in devices:
-    temp.start_convertion(device)
+  for key in temp_serials:
+    temp.start_convertion(temp_serials[key])
     time.sleep_ms(10)
 
   while True:
     temp_retry+=1
     if ( temp_retry > 20 ):
       break
-    print("Retry = ", temp_retry)
-    for i in range(0,num_devices):
-      if (device_read[i]!= 1):
-        temp_data = (temp.read_temp_async(devices[i]))
-        #print("temp_data #", i, " = ", temp_data)
+    for key in temp_serials:
+      if (device_read[key] != 1):
+        temp_data = (temp.read_temp_async(temp_serials[key]))
         if (temp_data != None):
-          temperatures[i] = temp_data
-          device_read[i] = 1
+          temperature[key] = temp_data
+          print("CALC =",Calc_Temp(temp_data))
+          device_read[key] = 1
       time.sleep_ms(100)
-    if ( sum(device_read) == num_devices ):
+    if ( sum(device_read.values()) == num_devices ):
       break
-  for sensor_num in range(0,len(temperatures)):
-    print("Temp ", sensor_num, " = ", temperatures[sensor_num])
+  for key in temperature:
+    print("Temp", key, " = ", temperature[key])
+    device_read[key]=0
 
-  #device_read=[0] * num_devices
-
-
-# isbusy()???
-#    time.sleep_ms(1000)
-
-
-
-
-#temp.start_convertion()
-#time.sleep(1)
-
-#while True:
-#    print(temp.read_temp_async())
-#    time.sleep(1)
-#    temp.start_convertion()
-#    time.sleep(1)
