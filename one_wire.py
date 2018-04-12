@@ -14,6 +14,12 @@ temperature = { "Front" : 0,
                 "Back"  : 0}
 device_read = { "Front" : 0,
                 "Back"  : 0}
+temp_sensors = { "Front" : { "serial" : bytearray(b'\x28\x89\x74\x29\x07\x00\x00\x89'),
+                             "temperature" : 22,
+                             "read" : 33 },
+                 "Back"  : { "serial" : bytearray(b'\x28\xb3\x31\x29\x07\x00\x00\x90'),
+                             "temperature" : 44,
+                             "read" : 55 } }
 
 print('Scanning the One Wire Bus....')
 devices = ow.scan()
@@ -28,6 +34,9 @@ for key in temp_serials:
   print("  * ", key, " Serial Number = ", device_serial, " (",sensor_found,")")
 
 # PUT IN A CHECK FOR NEW DEVICES
+
+for key in temp_sensors:
+  print(key, "temperature =", temp_sensors[key]["temperature"], ", read =", temp_sensors[key]["read"])
 
 while True:
 #for x in range(1):
