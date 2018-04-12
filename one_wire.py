@@ -2,14 +2,7 @@ import time
 from machine import Pin
 from onewire import DS18X20
 from onewire import OneWire
-
-##########################
-# Subroutines
-##########################
-
-def Calc_Temp(centicelcius):
-  Correct_Temp=centicelcius/100
-  return Correct_Temp
+from temperature import Calc_Temp
 
 #DS18B20 data line connected to pin P10
 ow = OneWire(Pin('P10'))
@@ -52,8 +45,8 @@ while True:
       if (device_read[key] != 1):
         temp_data = (temp.read_temp_async(temp_serials[key]))
         if (temp_data != None):
+          temp_data = Calc_Temp(temp_data)
           temperature[key] = temp_data
-          print("CALC =",Calc_Temp(temp_data))
           device_read[key] = 1
       time.sleep_ms(100)
     if ( sum(device_read.values()) == num_devices ):
