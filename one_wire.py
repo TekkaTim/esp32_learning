@@ -58,10 +58,11 @@ num_devices_found=len(devices)
 print('Looking for the following devices....')
 for key in temp_sensors:
   sensor_found="Missing"
-  if temp_sensors[key]["serial"] in devices: sensor_found="Available"
-  if temp_sensors[key] in devices: temp_sensors[key]["available"]=1
+  if temp_sensors[key]["serial"] in devices:
+    sensor_found="Available"
+    temp_sensors[key]["available"]=1
   device_serial="".join("%02x" % temp_sensors[key]["serial"][c-1] for c in range(len(temp_sensors[key]["serial"]), 0, -1))
-  print("  * ", key, " Serial Number = ", device_serial, " (",sensor_found,")")
+  print("  * "+key+" Serial Number = "+device_serial+" ("+sensor_found+")")
 
 
 # PUT IN A CHECK FOR NEW DEVICES
@@ -79,12 +80,12 @@ while True:
       temp.start_convertion(temp_sensors[key]["serial"])
       time.sleep_ms(10)
 
-  while True:
-    temp_retry+=1
-    if ( temp_retry > 20 ):
-      print("Retries for sensors exceeded")
-      break
+  #while True:
+  for temp_retry in range(5):
     for key in temp_sensors:
+      if ( temp_retry >= 4 ):
+        print("Retries for sensor",key,"exceeded")
+        break
       if (temp_sensors[key]["available"] == 1):
         if (temp_sensors[key]["read"] != 1):
           temp_data = (temp.read_temp_async(temp_sensors[key]["serial"]))
