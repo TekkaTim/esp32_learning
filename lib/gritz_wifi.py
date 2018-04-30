@@ -15,11 +15,14 @@ def WLAN_Connect(the_ssid):
     for net in nets:
         #print("Trying ",+net)
         if net.ssid == the_ssid:
+            retries=0
             print('Network found!')
             wlan.connect(net.ssid, auth=(WLAN.WPA2, 'something_tricky!'), timeout=1000)
             while not wlan.isconnected():
                 machine.idle() # save power while waiting
                 print('WLAN connection failed!')
+                retries+=1
+                if retries >= 20: break
             print('WLAN connection succeeded!')
             break
     #print("Connected to "+net_to_use+" with IP address:" + wl.ifconfig()[0])
