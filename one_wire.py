@@ -4,12 +4,26 @@ from onewire import DS18X20
 from onewire import OneWire
 from temperature import Calc_Temp
 from gritz_wifi import WLAN_Connect
+from machine import I2C
 
 #Connect to Wi-Fi
 WLAN_Connect('gritz')
 #DS18B20 data line connected to pin P10
 ow = OneWire(Pin('P10'))
 temp = DS18X20(ow)
+# I2C sda='P22' (G9), scl='P21' (G8)
+SDA='P22'
+SCL='P21'
+i2c = I2C(0, I2C.MASTER, baudrate=20000, pins=(SDA,SCL))
+i2c.init()
+# THIS IS NOT FINDING ANYTHING ON THE I2C BUS. NEED 4.7Kohm?
+# NEED TO TEST WITH THE DEFAULT
+#i2c.deinit()
+#fan_controller=i2c.scan()
+print("Scanning I2C Bus...")
+print("Found - ")
+i2c.scan()
+time.sleep(2)
 
 temp_sensors = { "Intake" : { "serial" : bytearray(b'\x28\x89\x74\x29\x07\x00\x00\x89'),
                              "available" : 0,
@@ -70,6 +84,7 @@ for key in temp_sensors:
 #for key in temp_sensors:
 #  print(key, "temperature =", temp_sensors[key]["temperature"], ", read =", temp_sensors[key]["read"])
 
+time.sleep(2)
 while True:
 #for x in range(1):
   # CHECK TEMPERATURE SENSORS
