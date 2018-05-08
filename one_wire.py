@@ -98,11 +98,10 @@ while True:
       temp.start_convertion(temp_sensors[key]["serial"])
       time.sleep_ms(10)
 
-  #while True:
+  all_temp_done = 0
   for temp_retry in range(5):
     for key in temp_sensors:
-      if ( temp_retry >= 4 ):
-        print("Retries for sensor",key,"exceeded")
+      if (temp_retry >= 5) or (all_temp_done == 1):
         break
       if (temp_sensors[key]["available"] == 1):
         if (temp_sensors[key]["read"] != 1):
@@ -112,11 +111,12 @@ while True:
             temp_sensors[key]["celcius"] = temp_data
             temp_sensors[key]["read"] = 1
         time.sleep_ms(100)
+
       read_count=0
-      for key in temp_sensors:
-        read_count += temp_sensors[key]["read"]
+      for ts in temp_sensors:
+        read_count += temp_sensors[ts]["read"]
       if ( read_count >= num_devices ):
-        break
+        all_temp_done = 1
 
 
   for key in temp_sensors:
