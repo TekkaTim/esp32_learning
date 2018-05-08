@@ -27,10 +27,10 @@ temp_sensors = { "Intake" : { "serial" : bytearray(b'\x28\x89\x74\x29\x07\x00\x0
                              "available" : 0,
                              "celcius" : 0,
                              "read" : 0 },
-#                 "HDD1"  : { "serial" : bytearray(b'\x28\xb3\x31\x29\x07\x00\x00\x90'),
-#                             "available" : 0,
-#                             "celcius" : 0,
-#                             "read" : 0 },
+                 "HDD1"  : { "serial" : bytearray(b'\x28\xfe\x5a\x29\x07\x00\x00\xce'),
+                             "available" : 0,
+                             "celcius" : 0,
+                             "read" : 0 },
 #                 "HDD2"  : { "serial" : bytearray(b'\x28\xb3\x31\x29\x07\x00\x00\x90'),
 #                             "available" : 0,
 #                             "celcius" : 0,
@@ -39,7 +39,7 @@ temp_sensors = { "Intake" : { "serial" : bytearray(b'\x28\x89\x74\x29\x07\x00\x0
 #                             "available" : 0,
 #                             "celcius" : 0,
 #                             "read" : 0 },
-                 "Exhaust"  : { "serial" : bytearray(b'\x28\xb3\x31\x29\x07\x00\x00\x90'),
+                 "Exhaust"  : { "serial" : bytearray(b'\x28\x5b\xca\x29\x07\x00\x00\xce'),
                              "available" : 0,
                              "celcius" : 0,
                              "read" : 0 }
@@ -50,8 +50,8 @@ num_devices=len(temp_sensors)
 #Fan RPM rate at certain temperatures.
 fan_speed_vs_temp = { "Intake" : {
                         "very_low":15,"low":18,"medium":20,"high":23,"very_high":25,"extreme":28 },
-#                      "HDD1" : {
-#                        "very_low":20,"low":25,"medium":30,"high":35,"very_high":40,"extreme":45 },
+                      "HDD1" : {
+                        "very_low":20,"low":25,"medium":30,"high":35,"very_high":40,"extreme":45 },
 #                      "HDD2" : {
 #                        "very_low":20,"low":25,"medium":30,"high":35,"very_high":40,"extreme":45 },
 #                      "Hot_Isle" : {
@@ -66,6 +66,11 @@ fan_rpm_speeds = { "very_low":30, "low":40, "medium":50, "high":60, "very_high":
 print('Scanning the One Wire Bus....')
 devices = ow.scan()
 num_devices_found=len(devices)
+#for key in devices:
+#    device_serial="".join("%02x" % key[c-1] for c in range(len(key), 0, -1))
+#    print("  * ",device_serial)
+
+
 
 print('Looking for the following devices....')
 for key in temp_sensors:
