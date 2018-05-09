@@ -21,6 +21,7 @@ i2c = I2C(0, I2C.MASTER, baudrate=100000, pins=(SDA,SCL))
 print("Scanning I2C Bus...")
 bob=i2c.scan()
 print("Found - ",bob)
+
 time.sleep(2)
 
 temp_sensors = { "Intake" : { "serial" : bytearray(b'\x28\x89\x74\x29\x07\x00\x00\x89'),
@@ -88,8 +89,8 @@ for key in temp_sensors:
 #  print(key, "temperature =", temp_sensors[key]["temperature"], ", read =", temp_sensors[key]["read"])
 
 time.sleep(2)
-while True:
-#for x in range(1):
+#while True:
+for x in range(1):
   # CHECK TEMPERATURE SENSORS
   temp_not_done=1
   temp_retry=0
@@ -133,4 +134,19 @@ while True:
 #  rpm_rate_required=0
 #  for key in temp_sensors:
 #    for rate in fan_rpm_speeds
+EMC2302_I2C_ADDR = const(46)
+
+print("Reading Fan Controller Chip Info...")
+i2c.writeto(EMC2302_I2C_ADDR, bytearray([0xFD]))
+time.sleep(0.5)
+data = i2c.readfrom(EMC2302_I2C_ADDR, 1)
+print("Product ID =",data[0]," ("+hex(data[0])+")")
+i2c.writeto(EMC2302_I2C_ADDR, bytearray([0xFE]))
+time.sleep(0.5)
+data = i2c.readfrom(EMC2302_I2C_ADDR, 1)
+print("Manufacturer ID =",data[0]," ("+hex(data[0])+")")
+i2c.writeto(EMC2302_I2C_ADDR, bytearray([0xFF]))
+time.sleep(0.5)
+data = i2c.readfrom(EMC2302_I2C_ADDR, 1)
+print("Revision =",data[0]," (",hex(data[0]),")")
 
