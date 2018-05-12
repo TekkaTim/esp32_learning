@@ -8,7 +8,7 @@ class EMC2302:
     """ class for handling the dual fan controller EMC2302
         datasheet available at http://ww1.microchip.com/downloads/en/DeviceDoc/2302.pdf""" 
 
-    EMC2302_I2C_ADDR = const(0x46)
+    EMC2302_I2C_ADDR = const(46)
 
     #Configuration and control registers
     FAN_STATUS = const(0x24)
@@ -41,8 +41,33 @@ class EMC2302:
 
 
     def __init__(self, sda = 'P22', scl = 'P21'):
-        self.i2c = I2C(0, mode=I2C.MASTER, pins=(sda, scl), baudrate=100000)
+        self.i2ctim = I2C(0, mode=I2C.MASTER, pins=(sda, scl), baudrate=100000)
+        print("Scanning I2C Bus...")
+        bob=self.i2ctim.scan()
+        print("Found - ",bob)
+
 
 
     #def Calc_Temp(centicelcius):
+
+
+
+    def product_id(self):
+        """ obtaining the relative humidity(%) measured by sensor """
+        self.i2ctim.writeto(EMC2302_I2C_ADDR, EMC2302_PRODUCT_ID)
+        time.sleep(0.5)
+        data = self.i2ctim.readfrom(EMC2302_I2C_ADDR, 1)
+        return data
+
+    def manufacturer_id(self):
+        self.i2ctim.writeto(EMC2302_I2C_ADDR, EMC2302_MANUF_ID)
+        time.sleep(0.5)
+        manu_id = self.i2ctim.readfrom(EMC2302_I2C_ADDR, 1)
+        return manu_id
+
+    def revision(self):
+        self.i2ctim.writeto(EMC2302_I2C_ADDR, EMC2302_REVISION)
+        time.sleep(0.5)
+        rev = self.i2ctim.readfrom(EMC2302_I2C_ADDR, 1)
+        return rev
 

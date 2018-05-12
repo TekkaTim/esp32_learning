@@ -5,6 +5,8 @@ from onewire import OneWire
 from temperature import Calc_Temp
 from gritz_wifi import WLAN_Connect
 from machine import I2C
+from NAS_Temp import NASTemp
+from EMC2302 import EMC2302
 
 #Connect to Wi-Fi
 WLAN_Connect('gritz')
@@ -13,14 +15,15 @@ ow = OneWire(Pin('P10'))
 temp = DS18X20(ow)
 
 # I2C sda='P22' (G9), scl='P21' (G8)
-SDA='P22'
-SCL='P21'
-i2c = I2C(0, I2C.MASTER, baudrate=100000, pins=(SDA,SCL))
+#SDA='P22'
+#SCL='P21'
+#i2c = I2C(0, I2C.MASTER, baudrate=100000, pins=(SDA,SCL))
+tim=EMC2302()
 
 #fan_controller=i2c.scan()
-print("Scanning I2C Bus...")
-bob=i2c.scan()
-print("Found - ",bob)
+#print("Scanning I2C Bus...")
+#bob=i2c.scan()
+#print("Found - ",bob)
 
 time.sleep(2)
 
@@ -72,7 +75,6 @@ num_devices_found=len(devices)
 #    print("  * ",device_serial)
 
 
-
 print('Looking for the following devices....')
 for key in temp_sensors:
   sensor_found="Missing"
@@ -80,6 +82,7 @@ for key in temp_sensors:
     sensor_found="Available"
     temp_sensors[key]["available"]=1
   device_serial="".join("%02x" % temp_sensors[key]["serial"][c-1] for c in range(len(temp_sensors[key]["serial"]), 0, -1))
+  #device_serial=NASTemp.convert_serial(temp_sensors[key]["serial"])
   print("  * "+key+" Serial Number = "+device_serial+" ("+sensor_found+")")
 
 
@@ -134,19 +137,15 @@ for x in range(1):
 #  rpm_rate_required=0
 #  for key in temp_sensors:
 #    for rate in fan_rpm_speeds
-EMC2302_I2C_ADDR = const(46)
 
 print("Reading Fan Controller Chip Info...")
-i2c.writeto(EMC2302_I2C_ADDR, bytearray([0xFD]))
-time.sleep(0.5)
-data = i2c.readfrom(EMC2302_I2C_ADDR, 1)
+
+data=tim.product_id()
 print("Product ID =",data[0]," ("+hex(data[0])+")")
-i2c.writeto(EMC2302_I2C_ADDR, bytearray([0xFE]))
-time.sleep(0.5)
-data = i2c.readfrom(EMC2302_I2C_ADDR, 1)
+
+data=tim.manufacturer_id()
 print("Manufacturer ID =",data[0]," ("+hex(data[0])+")")
-i2c.writeto(EMC2302_I2C_ADDR, bytearray([0xFF]))
-time.sleep(0.5)
-data = i2c.readfrom(EMC2302_I2C_ADDR, 1)
+
+data=tim.revision()
 print("Revision =",data[0]," (",hex(data[0]),")")
 
