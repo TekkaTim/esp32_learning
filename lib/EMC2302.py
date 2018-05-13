@@ -9,6 +9,7 @@ class EMC2302:
         datasheet available at http://ww1.microchip.com/downloads/en/DeviceDoc/2302.pdf""" 
 
     EMC2302_I2C_ADDR = const(46)
+    __EMC2303_READ_WAIT__ = 0.1
 
     #Configuration and control registers
     FAN_STATUS = const(0x24)
@@ -21,18 +22,18 @@ class EMC2302:
     FAN_1_CONTROL1 = const(0x32)
     FAN_1_CONTROL2 = const(0x33)
     FAN_1_TACH_TARGET_LOW = const(0x3C)
-    FAN_1_TACH_TARGET_HI = const(0x3D)
+    FAN_1_TACH_TARGET_HIGH = const(0x3D)
     FAN_1_TACH_READ_LOW = const(0x3F)
-    FAN_1_TACH_READ_HI = const(0x3E)
+    FAN_1_TACH_READ_HIGH = const(0x3E)
     
     #Fan 2 Control registers
     FAN_2_SETTING = const(0x40)
     FAN_2_CONTROL1 = const(0x42)
     FAN_2_CONTROL2 = const(0x43)
     FAN_2_TACH_TARGET_LOW = const(0x4C)
-    FAN_2_TACH_TARGET_HI = const(0x4D)
+    FAN_2_TACH_TARGET_HIGH = const(0x4D)
     FAN_2_TACH_READ_LOW = const(0x4F)
-    FAN_2_TACH_READ_HI = const(0x4E)
+    FAN_2_TACH_READ_HIGH = const(0x4E)
 
     #Revision Registers
     EMC2302_PRODUCT_ID = const(0xFD)
@@ -53,21 +54,100 @@ class EMC2302:
 
 
     def product_id(self):
-        """ obtaining the relative humidity(%) measured by sensor """
+        """ Gets the Product ID from the Fan Controller Chip (should be 0x36) """
         self.i2ctim.writeto(EMC2302_I2C_ADDR, EMC2302_PRODUCT_ID)
-        time.sleep(0.5)
+        time.sleep(0.1)
         data = self.i2ctim.readfrom(EMC2302_I2C_ADDR, 1)
         return data
 
     def manufacturer_id(self):
+        """ Gets the Manufacturer ID from the Fan Controller Chip (should be 0x5D) """
         self.i2ctim.writeto(EMC2302_I2C_ADDR, EMC2302_MANUF_ID)
-        time.sleep(0.5)
+        time.sleep(0.1)
         manu_id = self.i2ctim.readfrom(EMC2302_I2C_ADDR, 1)
         return manu_id
 
     def revision(self):
+        """ Gets the Revision from the Fan Controller Chip (should be 0x80) """
         self.i2ctim.writeto(EMC2302_I2C_ADDR, EMC2302_REVISION)
-        time.sleep(0.5)
+        time.sleep(0.1)
         rev = self.i2ctim.readfrom(EMC2302_I2C_ADDR, 1)
         return rev
+
+    def fan_status(self):
+        """ Get the Fan Status
+             The Fan Status register (0x24) indicates that one or both of the fan
+             drivers has stalled or failed or that the Watchdog Timer has expired.
+             Bits of interest are 7 (Watchdog), 2 (Drive), 1 (Spin) and 0 (Stall) """
+        self.i2ctim.writeto(EMC2302_I2C_ADDR, FAN_STATUS)
+        time.sleep(0.1)
+        data = self.i2ctim.readfrom(EMC2302_I2C_ADDR, 1)
+        fanstatus = [0,0,0,0]
+        fanstatus[0] = data[0] & 1
+        fanstatus[1] = data[0] >> 1 & 1
+        fanstatus[2] = data[0] >> 2 & 1
+        fanstatus[3] = data[0] >> 7 & 1
+        return fanstatus
+
+    def fan_stall_status(self):
+        """ Get the Fan Stall Status
+             The Fan Stall Status register indicates which fan driver has detected
+             a stalled condition. "1" = fault
+             All bits are cleared upon a read if the error condition has been removed.
+             Bits of interest are 1 (Fan 2) and 0 (Fan 1) """
+        self.i2ctim.writeto(EMC2302_I2C_ADDR, FAN_STALL_STATUS)
+        time.sleep(0.1)
+        data = self.i2ctim.readfrom(EMC2302_I2C_ADDR, 1)
+        fanstallstatus = [0,0]
+        fanstallstatus[0] = data[0] & 1
+        fanstallstatus[1] = data[0] >> 1 & 1
+        return fanstallstatus
+
+    def fan_spin_status(self):
+        """ Get the Fan Spin Status
+             The Fan Stall Status register indicates which fan driver has failed
+             to spin-up. "1" = fault
+             All bits are cleared upon a read if the error condition has been removed.
+             Bits of interest are 1 (Fan 2) and 0 (Fan 1) """
+        self.i2ctim.writeto(EMC2302_I2C_ADDR, FAN_SPIN_STATUS)
+        time.sleep(0.1)
+        data = self.i2ctim.readfrom(EMC2302_I2C_ADDR, 1)
+        fanspinstatus = [0,0]
+        fanspinstatus[0] = data[0] & 1
+        fanspinstatus[1] = data[0] >> 2 & 1
+        return fanspinstatus
+
+    def fan_drive_fail_status(self):
+        """ Get the Fan Drive Fail Status
+             The Fan Stall Status register indicates which fan driver has detected
+             a stalled condition. "1" = fault
+             All bits are cleared upon a read if the error condition has been removed.
+             Bits of interest are 1 (Fan 2) and 0 (Fan 1) """
+        self.i2ctim.writeto(EMC2302_I2C_ADDR, DRIVE_FAIL_STATUS)
+        time.sleep(0.1)
+        data = self.i2ctim.readfrom(EMC2302_I2C_ADDR, 1)
+        fandrivestatus = [0,0]
+        fandrivestatus[0] = data[0] & 1
+        fandrivestatus[1] = data[0] >> 2 & 1
+        return fandrivestatus
+
+    def fan_rpm(self):
+        """ Get the RPM of Fan
+             The The TACH Reading Registers’ contents describe the current tachometer
+             reading for each of the fans. By default, the data represents the fan
+             speed as the number of 32kHz clock periods that occur for a single
+             revolution of the fan.
+             There are 2 Bytes in this measurement, with the lowest byte being bit
+             shifted 3 times to the left (?) """
+        fanrpm=[0,0]
+        self.i2ctim.writeto(EMC2302_I2C_ADDR, FAN_1_TACH_TARGET_LOW)
+        time.sleep(0.1)
+        data = self.i2ctim.readfrom(EMC2302_I2C_ADDR, 1)
+        fanrpm[0] = data[0]
+        self.i2ctim.writeto(EMC2302_I2C_ADDR, FAN_1_TACH_TARGET_HIGH)
+        time.sleep(0.1)
+        data= self.i2ctim.readfrom(EMC2302_I2C_ADDR, 1)
+        fanrpm[1] = data[0]
+
+        return fanrpm
 
