@@ -10,23 +10,15 @@ from EMC2302 import EMC2302
 
 #Connect to Wi-Fi
 WLAN_Connect('gritz')
+
 #DS18B20 data line connected to pin P10
 ow = OneWire(Pin('P10'))
 temp = DS18X20(ow)
 
-# I2C sda='P22' (G9), scl='P21' (G8)
-#SDA='P22'
-#SCL='P21'
-#i2c = I2C(0, I2C.MASTER, baudrate=100000, pins=(SDA,SCL))
+# Initialize I2C for EMC2302
 tim=EMC2302()
 
-#fan_controller=i2c.scan()
-#print("Scanning I2C Bus...")
-#bob=i2c.scan()
-#print("Found - ",bob)
-
-time.sleep(2)
-
+# Set Up Dictionary for Temperature Sensors.
 temp_sensors = { "Intake" : { "serial" : bytearray(b'\x28\x89\x74\x29\x07\x00\x00\x89'),
                              "available" : 0,
                              "celcius" : 0,
@@ -51,7 +43,7 @@ temp_sensors = { "Intake" : { "serial" : bytearray(b'\x28\x89\x74\x29\x07\x00\x0
 
 num_devices=len(temp_sensors)
 
-#Fan RPM rate at certain temperatures.
+#Dictionary for Fan RPM rate at certain temperatures.
 fan_speed_vs_temp = { "Intake" : {
                         "very_low":15,"low":18,"medium":20,"high":23,"very_high":25,"extreme":28 },
                       "HDD1" : {
@@ -66,7 +58,11 @@ fan_speed_vs_temp = { "Intake" : {
 #Fan RPM Speeds.
 fan_rpm_speeds = { "very_low":30, "low":40, "medium":50, "high":60, "very_high":80, "extreme":100 }
 
+#########################################
+# CHECK 1-WIRE BUS
+#########################################
 
+# Scan the 1-Wire bus and find available devices
 print('Scanning the One Wire Bus....')
 devices = ow.scan()
 num_devices_found=len(devices)
@@ -74,7 +70,7 @@ num_devices_found=len(devices)
 #    device_serial="".join("%02x" % key[c-1] for c in range(len(key), 0, -1))
 #    print("  * ",device_serial)
 
-
+# Check to see if the sensors expected are available.
 print('Looking for the following devices....')
 for key in temp_sensors:
   sensor_found="Missing"
@@ -86,22 +82,27 @@ for key in temp_sensors:
   print("  * "+key+" Serial Number = "+device_serial+" ("+sensor_found+")")
 
 
+#########################################
 # PUT IN A CHECK FOR NEW DEVICES
+#########################################
 
-#for key in temp_sensors:
-#  print(key, "temperature =", temp_sensors[key]["temperature"], ", read =", temp_sensors[key]["read"])
 
-time.sleep(2)
+#########################################
+# GET TEMPERATURE DATA
+#########################################
+
 #while True:
-for x in range(1):
+for x in range(1):  # use this for testing
   # CHECK TEMPERATURE SENSORS
   temp_not_done=1
   temp_retry=0
+  # Start Conversion process in Temp Sensors.
   for key in temp_sensors:
     if (temp_sensors[key]["available"] == 1):
       temp.start_convertion(temp_sensors[key]["serial"])
       time.sleep_ms(10)
 
+  # Get temperature from sensors one by one until all are read.
   all_temp_done = 0
   for temp_retry in range(5):
     for key in temp_sensors:
@@ -115,37 +116,37 @@ for x in range(1):
             temp_sensors[key]["celcius"] = temp_data
             temp_sensors[key]["read"] = 1
         time.sleep_ms(100)
-
       read_count=0
       for ts in temp_sensors:
         read_count += temp_sensors[ts]["read"]
       if ( read_count >= num_devices ):
         all_temp_done = 1
 
-
+  # Print out the Temperatures
   for key in temp_sensors:
     if (temp_sensors[key]["available"] == 1):
       print("Temp", key, " = ",temp_sensors[key]["celcius"])
       temp_sensors[key]["read"]=0
 
 
+#########################################
+# GET FAN DATA
+#########################################
 
-  # CHECK FAN DATA
+# Get Manufacturer Information from Fan Controller Chip
+print("Reading Fan Controller Chip Info...")
+data=tim.product_id()
+print("Product ID =",data[0]," ("+hex(data[0])+")")
+data=tim.manufacturer_id()
+print("Manufacturer ID =",data[0]," ("+hex(data[0])+")")
+data=tim.revision()
+print("Revision =",data[0]," (",hex(data[0]),")")
+
+#
 
 
-  # ASSESS TEMPERATURE VS FAN DATA
+# ASSESS TEMPERATURE VS FAN DATA
 #  rpm_rate_required=0
 #  for key in temp_sensors:
 #    for rate in fan_rpm_speeds
-
-print("Reading Fan Controller Chip Info...")
-
-data=tim.product_id()
-print("Product ID =",data[0]," ("+hex(data[0])+")")
-
-data=tim.manufacturer_id()
-print("Manufacturer ID =",data[0]," ("+hex(data[0])+")")
-
-data=tim.revision()
-print("Revision =",data[0]," (",hex(data[0]),")")
 
