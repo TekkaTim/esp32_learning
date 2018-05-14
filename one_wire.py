@@ -91,8 +91,8 @@ for key in temp_sensors:
 # GET TEMPERATURE DATA
 #########################################
 
-#while True:
-for x in range(1):  # use this for testing
+while True:
+#for x in range(1):  # use this for testing
   # CHECK TEMPERATURE SENSORS
   temp_not_done=1
   temp_retry=0
@@ -129,56 +129,56 @@ for x in range(1):  # use this for testing
       temp_sensors[key]["read"]=0
 
 
-#########################################
-# GET FAN DATA
-#########################################
+  #########################################
+  # GET FAN DATA
+  #########################################
 
-# Get Manufacturer Information from Fan Controller Chip
-print("Reading Fan Controller Chip Info...")
-data=tim.product_id()
-print("Product ID =",data[0]," ("+hex(data[0])+")")
-data=tim.manufacturer_id()
-print("Manufacturer ID =",data[0]," ("+hex(data[0])+")")
-data=tim.revision()
-print("Revision =",data[0]," (",hex(data[0]),")")
+  # Get Manufacturer Information from Fan Controller Chip
+  print("Reading Fan Controller Chip Info...")
+  data=tim.product_id()
+  print("Product ID =",data[0]," ("+hex(data[0])+")")
+  data=tim.manufacturer_id()
+  print("Manufacturer ID =",data[0]," ("+hex(data[0])+")")
+  data=tim.revision()
+  print("Revision =",data[0]," (",hex(data[0]),")")
 
-# Get Fan Status
-print("Getting Fan Status...")
-data=tim.fan_status()
-print("Stall =", data[0])
-print("Spin =", data[1])
-print("Drive =", data[2])
-print("Watchdog =", data[3])
+  # Get Fan Status
+  print("Getting Fan Status...")
+  data=tim.fan_status()
+  print("Stall =", data[0])
+  print("Spin =", data[1])
+  print("Drive =", data[2])
+  print("Watchdog =", data[3])
 
-# Get Fan Stall Status
-print("Getting Fan Stall Status...")
-data=tim.fan_stall_status()
-print("Stall Fan 1 =", data[0])
-print("Stall Fan 2 =", data[1])
+  # Get Fan Stall Status
+  print("Getting Fan Stall Status...")
+  data=tim.fan_stall_status()
+  print("Stall Fan 1 =", data[0])
+  print("Stall Fan 2 =", data[1])
 
-# Get Fan Spin Status
-print("Getting Fan Spin Status...")
-data=tim.fan_spin_status()
-print("Spin Fan 1 =", data[0])
-print("Spin Fan 2 =", data[1])
+  # Get Fan Spin Status
+  print("Getting Fan Spin Status...")
+  data=tim.fan_spin_status()
+  print("Spin Fan 1 =", data[0])
+  print("Spin Fan 2 =", data[1])
 
-# Get Fan Drive Fail Status
-print("Getting Fan Drive Fail Status...")
-data=tim.fan_drive_fail_status()
-print("Fan Drive Fail 1 =", data[0])
-print("Fan Drive Fail 2 =", data[1])
+  # Get Fan Drive Fail Status
+  print("Getting Fan Drive Fail Status...")
+  data=tim.fan_drive_fail_status()
+  print("Fan Drive Fail 1 =", data[0])
+  print("Fan Drive Fail 2 =", data[1])
 
-# Get Fan RPM
-print("Getting Fan RPMs...")
-data=tim.fan_rpm()
-print("Fan 1 RPM High =", data[1])
-#data=tim.fan_rpm("2")
-print("Fan 1 RPM Low =", data[0])
-print("Fan 2 RPM High =", data[3])
-print("Fan 2 RPM Low =", data[2])
+  # Get Fan RPM
+  print("Getting Fan RPMs...")
+  data=tim.fan_rpm()
+  print("Fan 1 RPM High =", data[1])
+  #data=tim.fan_rpm("2")
+  print("Fan 1 RPM Low =", data[0])
+  print("Fan 2 RPM High =", data[3])
+  print("Fan 2 RPM Low =", data[2])
 
-# ASSESS TEMPERATURE VS FAN DATA
-#  rpm_rate_required=0
-#  for key in temp_sensors:
-#    for rate in fan_rpm_speeds
+  # ASSESS TEMPERATURE VS FAN DATA
+  #  rpm_rate_required=0
+  #  for key in temp_sensors:
+  #    for rate in fan_rpm_speeds
 
