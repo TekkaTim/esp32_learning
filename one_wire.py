@@ -174,6 +174,8 @@ data=tim.fan_rpm()
 print("Fan 1 RPM High =", data[1])
 #data=tim.fan_rpm("2")
 print("Fan 1 RPM Low =", data[0])
+print("Fan 2 RPM High =", data[3])
+print("Fan 2 RPM Low =", data[2])
 
 # ASSESS TEMPERATURE VS FAN DATA
 #  rpm_rate_required=0

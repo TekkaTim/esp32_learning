@@ -139,7 +139,7 @@ class EMC2302:
              revolution of the fan.
              There are 2 Bytes in this measurement, with the lowest byte being bit
              shifted 3 times to the left (?) """
-        fanrpm=[0,0]
+        fanrpm=[0,0,0,0]
         self.i2ctim.writeto(EMC2302_I2C_ADDR, FAN_1_TACH_TARGET_LOW)
         time.sleep(0.1)
         data = self.i2ctim.readfrom(EMC2302_I2C_ADDR, 1)
@@ -148,6 +148,15 @@ class EMC2302:
         time.sleep(0.1)
         data= self.i2ctim.readfrom(EMC2302_I2C_ADDR, 1)
         fanrpm[1] = data[0]
+
+        self.i2ctim.writeto(EMC2302_I2C_ADDR, FAN_2_TACH_TARGET_LOW)
+        time.sleep(0.1)
+        data = self.i2ctim.readfrom(EMC2302_I2C_ADDR, 1)
+        fanrpm[2] = data[0]
+        self.i2ctim.writeto(EMC2302_I2C_ADDR, FAN_2_TACH_TARGET_HIGH)
+        time.sleep(0.1)
+        data= self.i2ctim.readfrom(EMC2302_I2C_ADDR, 1)
+        fanrpm[3] = data[0]
 
         return fanrpm
 
