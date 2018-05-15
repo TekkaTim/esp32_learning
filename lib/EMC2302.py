@@ -12,6 +12,7 @@ class EMC2302:
     __EMC2303_READ_WAIT__ = 0.1
 
     #Configuration and control registers
+    CONFIG_REGISTER = const(0x20)
     FAN_STATUS = const(0x24)
     FAN_STALL_STATUS = const(0x25)
     FAN_SPIN_STATUS = const(0x26)
@@ -157,6 +158,23 @@ class EMC2302:
         time.sleep(0.1)
         data= self.i2ctim.readfrom(EMC2302_I2C_ADDR, 1)
         fanrpm[3] = data[0]
-
         return fanrpm
+
+    def get_config_register(self):
+        """ Get setting from the Configuration Register (0x20).
+             The Configuration Register controls the basic functionality of the
+             EMC2302 fan controller.
+             Bits of interest are;
+               * 7 - Alert Pin masked. 0 (def): pin enabled, 1: pin disabled
+               * 6 - Disable SMB timout - for I2C compatibility
+               * 5 - Watchdog - 0 (def): single shot, 1: continuous
+               * 1 - CLK output - 0 (def): input, 1: output
+               * 0 - CLK Source - 0 (def): internal, 1: external
+        """
+        self.i2ctim.writeto(EMC2302_I2C_ADDR, CONFIG_REGISTER)
+        time.sleep(0.1)
+        data = self.i2ctim.readfrom(EMC2302_I2C_ADDR, 1)
+        configregister = data[0]
+        return configregister
+
 

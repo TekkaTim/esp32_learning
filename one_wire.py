@@ -133,6 +133,11 @@ while True:
   # GET FAN DATA
   #########################################
 
+  # Get Config Register Setting
+  print("Reading Configuration Register...")
+  data=tim.get_config_register()
+  print("Configuration Register =",data," ("+hex(data)+")")
+
   # Get Manufacturer Information from Fan Controller Chip
   print("Reading Fan Controller Chip Info...")
   data=tim.product_id()
@@ -140,7 +145,7 @@ while True:
   data=tim.manufacturer_id()
   print("Manufacturer ID =",data[0]," ("+hex(data[0])+")")
   data=tim.revision()
-  print("Revision =",data[0]," (",hex(data[0]),")")
+  print("Revision =",data[0]," ("+hex(data[0])+")")
 
   # Get Fan Status
   print("Getting Fan Status...")
