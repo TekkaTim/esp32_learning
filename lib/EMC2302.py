@@ -52,42 +52,45 @@ class EMC2302:
 
     #def Calc_Temp(centicelcius):
 
+    def read_EMC2302(self, REGISTER, BYTES=1):
+        """ Reads a register from the EMC2302 Fan Controller Chip """
+        self.i2ctim.writeto(EMC2302_I2C_ADDR, REGISTER)
+        time.sleep(0.1)
+        data = self.i2ctim.readfrom(EMC2302_I2C_ADDR, BYTES)
+        return data
+
+    def write_EMC2302(self, REGISTER, VALUE):
+        """ Writes a value to a register in the EMC2302 Fan Controller Chip """
+        self.i2ctim.writeto(EMC2302_I2C_ADDR, bytearray([REGISTER])+bytearray([VALUE]))
+        time.sleep(0.1)
 
 
     def product_id(self):
         """ Gets the Product ID from the Fan Controller Chip (should be 0x36) """
-        self.i2ctim.writeto(EMC2302_I2C_ADDR, EMC2302_PRODUCT_ID)
-        time.sleep(0.1)
-        data = self.i2ctim.readfrom(EMC2302_I2C_ADDR, 1)
-        return data
+        prod_id = self.read_EMC2302(EMC2302_PRODUCT_ID)
+        return prod_id[0]
 
     def manufacturer_id(self):
         """ Gets the Manufacturer ID from the Fan Controller Chip (should be 0x5D) """
-        self.i2ctim.writeto(EMC2302_I2C_ADDR, EMC2302_MANUF_ID)
-        time.sleep(0.1)
-        manu_id = self.i2ctim.readfrom(EMC2302_I2C_ADDR, 1)
-        return manu_id
+        manu_id = self.read_EMC2302(EMC2302_MANUF_ID)
+        return manu_id[0]
 
     def revision(self):
         """ Gets the Revision from the Fan Controller Chip (should be 0x80) """
-        self.i2ctim.writeto(EMC2302_I2C_ADDR, EMC2302_REVISION)
-        time.sleep(0.1)
-        rev = self.i2ctim.readfrom(EMC2302_I2C_ADDR, 1)
-        return rev
+        rev= self.read_EMC2302(EMC2302_REVISION)
+        return rev[0]
 
     def fan_status(self):
         """ Get the Fan Status
              The Fan Status register (0x24) indicates that one or both of the fan
              drivers has stalled or failed or that the Watchdog Timer has expired.
              Bits of interest are 7 (Watchdog), 2 (Drive), 1 (Spin) and 0 (Stall) """
-        self.i2ctim.writeto(EMC2302_I2C_ADDR, FAN_STATUS)
-        time.sleep(0.1)
-        data = self.i2ctim.readfrom(EMC2302_I2C_ADDR, 1)
+        temp_data = self.read_EMC2302(FAN_STATUS)
         fanstatus = [0,0,0,0]
-        fanstatus[0] = data[0] & 1
-        fanstatus[1] = data[0] >> 1 & 1
-        fanstatus[2] = data[0] >> 2 & 1
-        fanstatus[3] = data[0] >> 7 & 1
+        fanstatus[0] = temp_data[0] & 1
+        fanstatus[1] = temp_data[0] >> 1 & 1
+        fanstatus[2] = temp_data[0] >> 2 & 1
+        fanstatus[3] = temp_data[0] >> 7 & 1
         return fanstatus
 
     def fan_stall_status(self):
@@ -96,12 +99,10 @@ class EMC2302:
              a stalled condition. "1" = fault
              All bits are cleared upon a read if the error condition has been removed.
              Bits of interest are 1 (Fan 2) and 0 (Fan 1) """
-        self.i2ctim.writeto(EMC2302_I2C_ADDR, FAN_STALL_STATUS)
-        time.sleep(0.1)
-        data = self.i2ctim.readfrom(EMC2302_I2C_ADDR, 1)
+        temp_data = self.read_EMC2302(FAN_STALL_STATUS)
         fanstallstatus = [0,0]
-        fanstallstatus[0] = data[0] & 1
-        fanstallstatus[1] = data[0] >> 1 & 1
+        fanstallstatus[0] = temp_data[0] & 1
+        fanstallstatus[1] = temp_data[0] >> 1 & 1
         return fanstallstatus
 
     def fan_spin_status(self):
@@ -110,12 +111,10 @@ class EMC2302:
              to spin-up. "1" = fault
              All bits are cleared upon a read if the error condition has been removed.
              Bits of interest are 1 (Fan 2) and 0 (Fan 1) """
-        self.i2ctim.writeto(EMC2302_I2C_ADDR, FAN_SPIN_STATUS)
-        time.sleep(0.1)
-        data = self.i2ctim.readfrom(EMC2302_I2C_ADDR, 1)
+        temp_data = self.read_EMC2302(FAN_SPIN_STATUS)
         fanspinstatus = [0,0]
-        fanspinstatus[0] = data[0] & 1
-        fanspinstatus[1] = data[0] >> 2 & 1
+        fanspinstatus[0] = temp_data[0] & 1
+        fanspinstatus[1] = temp_data[0] >> 2 & 1
         return fanspinstatus
 
     def fan_drive_fail_status(self):
@@ -124,12 +123,10 @@ class EMC2302:
              a stalled condition. "1" = fault
              All bits are cleared upon a read if the error condition has been removed.
              Bits of interest are 1 (Fan 2) and 0 (Fan 1) """
-        self.i2ctim.writeto(EMC2302_I2C_ADDR, DRIVE_FAIL_STATUS)
-        time.sleep(0.1)
-        data = self.i2ctim.readfrom(EMC2302_I2C_ADDR, 1)
+        temp_data = self.read_EMC2302(DRIVE_FAIL_STATUS)
         fandrivestatus = [0,0]
-        fandrivestatus[0] = data[0] & 1
-        fandrivestatus[1] = data[0] >> 2 & 1
+        fandrivestatus[0] = temp_data[0] & 1
+        fandrivestatus[1] = temp_data[0] >> 2 & 1
         return fandrivestatus
 
     def fan_rpm(self):
@@ -141,23 +138,14 @@ class EMC2302:
              There are 2 Bytes in this measurement, with the lowest byte being bit
              shifted 3 times to the left (?) """
         fanrpm=[0,0,0,0]
-        self.i2ctim.writeto(EMC2302_I2C_ADDR, FAN_1_TACH_TARGET_LOW)
-        time.sleep(0.1)
-        data = self.i2ctim.readfrom(EMC2302_I2C_ADDR, 1)
-        fanrpm[0] = data[0]
-        self.i2ctim.writeto(EMC2302_I2C_ADDR, FAN_1_TACH_TARGET_HIGH)
-        time.sleep(0.1)
-        data= self.i2ctim.readfrom(EMC2302_I2C_ADDR, 1)
-        fanrpm[1] = data[0]
-
-        self.i2ctim.writeto(EMC2302_I2C_ADDR, FAN_2_TACH_TARGET_LOW)
-        time.sleep(0.1)
-        data = self.i2ctim.readfrom(EMC2302_I2C_ADDR, 1)
-        fanrpm[2] = data[0]
-        self.i2ctim.writeto(EMC2302_I2C_ADDR, FAN_2_TACH_TARGET_HIGH)
-        time.sleep(0.1)
-        data= self.i2ctim.readfrom(EMC2302_I2C_ADDR, 1)
-        fanrpm[3] = data[0]
+        temp_data = self.read_EMC2302(FAN_1_TACH_READ_LOW)
+        fanrpm[0] = temp_data[0]
+        temp_data = self.read_EMC2302(FAN_1_TACH_READ_HIGH)
+        fanrpm[1] = temp_data[0]
+        temp_data = self.read_EMC2302(FAN_2_TACH_READ_LOW)
+        fanrpm[2] = temp_data[0]
+        temp_data = self.read_EMC2302(FAN_2_TACH_READ_HIGH)
+        fanrpm[3] = temp_data[0]
         return fanrpm
 
     def get_config_register(self):
@@ -169,12 +157,23 @@ class EMC2302:
                * 6 - Disable SMB timout - for I2C compatibility
                * 5 - Watchdog - 0 (def): single shot, 1: continuous
                * 1 - CLK output - 0 (def): input, 1: output
-               * 0 - CLK Source - 0 (def): internal, 1: external
-        """
-        self.i2ctim.writeto(EMC2302_I2C_ADDR, CONFIG_REGISTER)
-        time.sleep(0.1)
-        data = self.i2ctim.readfrom(EMC2302_I2C_ADDR, 1)
-        configregister = data[0]
-        return configregister
+               * 0 - CLK Source - 0 (def): internal, 1: external """
+        configregister = self.read_EMC2302(CONFIG_REGISTER)
+        return configregister[0]
+
+    def set_watchdog_continuous(self):
+        """ Set the watchdog status bit (5) of the Configuration Register (0x20) to
+             1 to enable continuous mode for the watchdog timer.
+             In Continuous Operation, the Watchdog timer will start immediately.
+             The timer will be reset by any access (read or write) to the SMBus
+             register set. The four second Watchdog timer will restart upon
+             completion of SMBus activity. """
+        configregister = self.read_EMC2302(CONFIG_REGISTER)
+        newconfigregister = configregister[0] | 32
+        self.write_EMC2302(CONFIG_REGISTER,newconfigregister)
+        checkconfigregister = self.read_EMC2302(CONFIG_REGISTER)
+        watchdog = checkconfigregister[0] >> 5 & 1
+        return watchdog
+
 
 
