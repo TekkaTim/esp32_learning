@@ -17,6 +17,13 @@ temp = DS18X20(ow)
 
 # Initialize I2C for EMC2302
 tim=EMC2302()
+watchdog=tim.set_watchdog_continuous()
+if ( watchdog == 1 ):
+  print("EMC2302 WatchDog Timer Set to Continuous")
+  #check alert?
+else:
+  print("EMC2302 WatchDog Timer Set to Single Shot! Check Config!")
+
 
 # Set Up Dictionary for Temperature Sensors.
 temp_sensors = { "Intake" : { "serial" : bytearray(b'\x28\x89\x74\x29\x07\x00\x00\x89'),
@@ -83,6 +90,24 @@ for key in temp_sensors:
 
 
 #########################################
+# Get EMC2302 Chip Info
+#########################################
+
+# Get Manufacturer Information from Fan Controller Chip
+print("Reading Fan Controller Chip Info...")
+data=tim.product_id()
+print("Product ID =",data," ("+hex(data)+")")
+data=tim.manufacturer_id()
+print("Manufacturer ID =",data," ("+hex(data)+")")
+data=tim.revision()
+print("Revision =",data," ("+hex(data)+")")
+
+# Get Config Register Setting
+print("Reading Configuration Register...")
+data=tim.get_config_register()
+print("Configuration Register =",data," ("+hex(data)+")")
+
+#########################################
 # PUT IN A CHECK FOR NEW DEVICES
 #########################################
 
@@ -115,7 +140,7 @@ while True:
             temp_data = Calc_Temp(temp_data)
             temp_sensors[key]["celcius"] = temp_data
             temp_sensors[key]["read"] = 1
-        time.sleep_ms(100)
+        time.sleep_ms(50)
       read_count=0
       for ts in temp_sensors:
         read_count += temp_sensors[ts]["read"]
@@ -123,6 +148,7 @@ while True:
         all_temp_done = 1
 
   # Print out the Temperatures
+  print("\nTemperatures are...")
   for key in temp_sensors:
     if (temp_sensors[key]["available"] == 1):
       print("Temp", key, " = ",temp_sensors[key]["celcius"])
@@ -133,55 +159,26 @@ while True:
   # GET FAN DATA
   #########################################
 
-  # Get Config Register Setting
-  print("Reading Configuration Register...")
-  data=tim.get_config_register()
-  print("Configuration Register =",data," ("+hex(data)+")")
-
-  # Get Manufacturer Information from Fan Controller Chip
-  print("Reading Fan Controller Chip Info...")
-  data=tim.product_id()
-  print("Product ID =",data[0]," ("+hex(data[0])+")")
-  data=tim.manufacturer_id()
-  print("Manufacturer ID =",data[0]," ("+hex(data[0])+")")
-  data=tim.revision()
-  print("Revision =",data[0]," ("+hex(data[0])+")")
-
   # Get Fan Status
-  print("Getting Fan Status...")
-  data=tim.fan_status()
-  print("Stall =", data[0])
-  print("Spin =", data[1])
-  print("Drive =", data[2])
-  print("Watchdog =", data[3])
+  print("\nGetting Fan Status...")
+  fan_status=tim.fan_status()
+  fan_stall_status=tim.fan_stall_status()
+  fan_spin_status=tim.fan_spin_status()
+  fan_drive_fail_status=tim.fan_drive_fail_status()
+  print("====================================")
+  print("| Item     | Total | Fan 1 | Fan 2 |")
+  print("| Stall    |  ",fan_status[0],"  |  ",fan_stall_status[0],"  |  ",fan_stall_status[1],"  |")
+  print("| Spin     |  ",fan_status[1],"  |  ",fan_spin_status[0],"  |  ",fan_spin_status[1],"  |")
+  print("| Drive    |  ",fan_status[2],"  |  ",fan_drive_fail_status[0],"  |  ",fan_drive_fail_status[1],"  |")
+  print("| Watchdog |  ",fan_status[3],"  |   -   |   -   |")
+  print("====================================")
 
-  # Get Fan Stall Status
-  print("Getting Fan Stall Status...")
-  data=tim.fan_stall_status()
-  print("Stall Fan 1 =", data[0])
-  print("Stall Fan 2 =", data[1])
+  print("\nGetting Fan RPMs...")
+  fan_rpm=tim.fan_rpm()
+  print("Fan 1 RPM High =", fan_rpm[1],", Fan 1 RPM Low =", fan_rpm[0])
+  print("Fan 2 RPM High =", fan_rpm[3],", Fan 2 RPM Low =", fan_rpm[2])
 
-  # Get Fan Spin Status
-  print("Getting Fan Spin Status...")
-  data=tim.fan_spin_status()
-  print("Spin Fan 1 =", data[0])
-  print("Spin Fan 2 =", data[1])
-
-  # Get Fan Drive Fail Status
-  print("Getting Fan Drive Fail Status...")
-  data=tim.fan_drive_fail_status()
-  print("Fan Drive Fail 1 =", data[0])
-  print("Fan Drive Fail 2 =", data[1])
-
-  # Get Fan RPM
-  print("Getting Fan RPMs...")
-  data=tim.fan_rpm()
-  print("Fan 1 RPM High =", data[1])
-  #data=tim.fan_rpm("2")
-  print("Fan 1 RPM Low =", data[0])
-  print("Fan 2 RPM High =", data[3])
-  print("Fan 2 RPM Low =", data[2])
-
+  time.sleep(1)
   # ASSESS TEMPERATURE VS FAN DATA
   #  rpm_rate_required=0
   #  for key in temp_sensors:
