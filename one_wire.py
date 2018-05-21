@@ -18,6 +18,7 @@ temp = DS18X20(ow)
 # Initialize I2C for EMC2302
 tim=EMC2302()
 watchdog=tim.set_watchdog_continuous()
+fanrange=tim.set_fan_range_bits()
 if ( watchdog == 1 ):
   print("EMC2302 WatchDog Timer Set to Continuous")
   #check alert?
@@ -175,8 +176,16 @@ while True:
 
   print("\nGetting Fan RPMs...")
   fan_rpm=tim.fan_rpm()
-  print("Fan 1 RPM High =", fan_rpm[1],", Fan 1 RPM Low =", fan_rpm[0])
-  print("Fan 2 RPM High =", fan_rpm[3],", Fan 2 RPM Low =", fan_rpm[2])
+#  print("Fan 1 RPM High =    ", fan_rpm[1],", Fan 1 RPM Low =    ", fan_rpm[0])
+#  print("Fan 2 RPM High =    ", fan_rpm[3],", Fan 2 RPM Low =    ", fan_rpm[2])
+  print("Fan 2 RPM High =", fan_rpm[3], " ("+bin(fan_rpm[3])+"), Fan 2 RPM Low =", fan_rpm[2], " ("+bin(fan_rpm[2])+")")
+
+  fan2_rpm_count = (fan_rpm[3] << 8) + fan_rpm[2]
+  fan2_rpm_count = fan2_rpm_count >> 3
+  fan2_rpm = 3932160 / fan2_rpm_count
+  #fan2_rpm = 7864320 / fan2_rpm_count
+
+  print("Fan 2 RPM =",fan2_rpm)
 
   time.sleep(1)
   # ASSESS TEMPERATURE VS FAN DATA

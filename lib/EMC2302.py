@@ -20,8 +20,8 @@ class EMC2302:
 
     #Fan 1 Control registers
     FAN_1_SETTING = const(0x30)
-    FAN_1_CONTROL1 = const(0x32)
-    FAN_1_CONTROL2 = const(0x33)
+    FAN_1_CONFIG1 = const(0x32)
+    FAN_1_CONFIG2 = const(0x33)
     FAN_1_TACH_TARGET_LOW = const(0x3C)
     FAN_1_TACH_TARGET_HIGH = const(0x3D)
     FAN_1_TACH_READ_LOW = const(0x3F)
@@ -29,8 +29,8 @@ class EMC2302:
     
     #Fan 2 Control registers
     FAN_2_SETTING = const(0x40)
-    FAN_2_CONTROL1 = const(0x42)
-    FAN_2_CONTROL2 = const(0x43)
+    FAN_2_CONFIG1 = const(0x42)
+    FAN_2_CONFIG2 = const(0x43)
     FAN_2_TACH_TARGET_LOW = const(0x4C)
     FAN_2_TACH_TARGET_HIGH = const(0x4D)
     FAN_2_TACH_READ_LOW = const(0x4F)
@@ -174,6 +174,30 @@ class EMC2302:
         checkconfigregister = self.read_EMC2302(CONFIG_REGISTER)
         watchdog = checkconfigregister[0] >> 5 & 1
         return watchdog
+
+    def set_fan_range_bits(self):
+        """ Set the Fan Range bits for Tacho multiplier
+             Bits 6 & 5 of the Fan Configuration Registers (0x32 & 0x42) adjusts
+             the range of reported and programmed tachometer reading values.
+             The RANGE bits determine the weighting of all TACH values (including
+             the Valid TACH Count, TACH Target, and TACH reading).
+
+             0-0 = x 1 (500 min RPM)
+             0-1 = x 2 (1000 min RPM) *DEFAULT
+             1-0 = x 4 (2000 min RPM)
+             1-1 = x 8 (4000 min RPM)
+
+             We want 0-0 as need to measure down to approx 400 RPM
+        """
+        fanconfigregister = self.read_EMC2302(FAN_2_CONFIG1)
+        print("fan register = ", fanconfigregister[0], " (", bin(fanconfigregister[0]), ")")
+        newfanconfigregister = fanconfigregister[0] & 0b10011111
+        print("new fan register = ", newfanconfigregister, " (", bin(newfanconfigregister), ")")
+        self.write_EMC2302(FAN_2_CONFIG1,newfanconfigregister)
+        checkfanconfigregister = self.read_EMC2302(FAN_2_CONFIG1)
+        fanrange = checkfanconfigregister[0] & 0b01100000
+        print("fan range = ", fanrange, " (", bin(fanrange), ")")
+        return fanrange
 
 
 
