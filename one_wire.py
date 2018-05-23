@@ -8,23 +8,28 @@ from machine import I2C
 from NAS_Temp import NASTemp
 from EMC2302 import EMC2302
 
-#Connect to Wi-Fi
+# Connect to Wi-Fi
 WLAN_Connect('gritz')
 
-#DS18B20 data line connected to pin P10
+# DS18B20 data line connected to pin P10
 ow = OneWire(Pin('P10'))
 temp = DS18X20(ow)
 
 # Initialize I2C for EMC2302
 tim=EMC2302()
 watchdog=tim.set_watchdog_continuous()
-fanrange=tim.set_fan_range_bits()
 if ( watchdog == 1 ):
   print("EMC2302 WatchDog Timer Set to Continuous")
   #check alert?
 else:
   print("EMC2302 WatchDog Timer Set to Single Shot! Check Config!")
+fanrange=tim.set_fan_range_bits()
+faninterrupt=tim.set_fan_interrupt_bits()
 
+# Set up Pin P18 for Fan controller Alert
+p_alert = Pin('P18', mode=Pin.IN, pull=Pin.PULL_UP)
+alert_status = p_alert()
+print("Alert Status = ",alert_status)
 
 # Set Up Dictionary for Temperature Sensors.
 temp_sensors = { "Intake" : { "serial" : bytearray(b'\x28\x89\x74\x29\x07\x00\x00\x89'),
@@ -187,6 +192,8 @@ while True:
 
   print("Fan 2 RPM =",fan2_rpm)
 
+  alert_status = p_alert()
+  print("Alert Status = ",alert_status)
   time.sleep(1)
   # ASSESS TEMPERATURE VS FAN DATA
   #  rpm_rate_required=0

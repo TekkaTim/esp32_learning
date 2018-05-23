@@ -17,6 +17,7 @@ class EMC2302:
     FAN_STALL_STATUS = const(0x25)
     FAN_SPIN_STATUS = const(0x26)
     DRIVE_FAIL_STATUS = const(0x27)
+    FAN_INTERRUPT_ENABLE = const(0x29)
 
     #Fan 1 Control registers
     FAN_1_SETTING = const(0x30)
@@ -169,7 +170,7 @@ class EMC2302:
              register set. The four second Watchdog timer will restart upon
              completion of SMBus activity. """
         configregister = self.read_EMC2302(CONFIG_REGISTER)
-        newconfigregister = configregister[0] | 32
+        newconfigregister = configregister[0] | 0b00100000
         self.write_EMC2302(CONFIG_REGISTER,newconfigregister)
         checkconfigregister = self.read_EMC2302(CONFIG_REGISTER)
         watchdog = checkconfigregister[0] >> 5 & 1
@@ -189,15 +190,42 @@ class EMC2302:
 
              We want 0-0 as need to measure down to approx 400 RPM
         """
-        fanconfigregister = self.read_EMC2302(FAN_2_CONFIG1)
-        print("fan register = ", fanconfigregister[0], " (", bin(fanconfigregister[0]), ")")
+        fanrange=[0,0]
+        fanconfigregister = self.read_EMC2302(FAN_1_CONFIG1)
         newfanconfigregister = fanconfigregister[0] & 0b10011111
-        print("new fan register = ", newfanconfigregister, " (", bin(newfanconfigregister), ")")
+        self.write_EMC2302(FAN_1_CONFIG1,newfanconfigregister)
+        checkfanconfigregister = self.read_EMC2302(FAN_1_CONFIG1)
+        fanrange[0] = checkfanconfigregister[0] & 0b01100000
+        fanconfigregister = self.read_EMC2302(FAN_2_CONFIG1)
+        newfanconfigregister = fanconfigregister[0] & 0b10011111
         self.write_EMC2302(FAN_2_CONFIG1,newfanconfigregister)
         checkfanconfigregister = self.read_EMC2302(FAN_2_CONFIG1)
-        fanrange = checkfanconfigregister[0] & 0b01100000
-        print("fan range = ", fanrange, " (", bin(fanrange), ")")
+        fanrange[1] = checkfanconfigregister[0] & 0b01100000
         return fanrange
 
+    def set_fan_interrupt_bits(self):
+        """ Set the Fan Interrupt bits for in Fan Interrupt Enable Register
+             Bits 1 & 0 of the Fan Interrupt Enable Register (0x29) controls the
+              masking for each Fan channel. When a channel is enabled, it will
+              cause the ALERT# pin to be asserted when an error condition is detected.
+
+             bit 0 = Fan 1 Interrupt Enable
+             bit 1 = Fan 2 Interrupt Enable
+
+             ‘0’ (default) - An error condition on Fan X will NOT cause the ALERT#
+               pin to be asserted, however the status registers will be updated normally.
+              ‘1’ - An error condition (Stall, Spin Up, Drive Fail) on Fan X will
+               cause the ALERT# pin to be asserted.
+             We want both fans to cause the ALERT# pin to be asserted (go low '0')
+        """
+        faninterruptregister = self.read_EMC2302(FAN_INTERRUPT_ENABLE)
+        print("fan interrupt register = ", faninterruptregister[0], " (", bin(faninterruptregister[0]), ")")
+        newfaninterruptregister = faninterruptregister[0] | 0b00000011
+        print("new fan register = ", newfaninterruptregister, " (", bin(newfaninterruptregister), ")")
+        self.write_EMC2302(FAN_INTERRUPT_ENABLE,newfaninterruptregister)
+        checkfaninterruptregister = self.read_EMC2302(FAN_INTERRUPT_ENABLE)
+        faninterrupt = checkfaninterruptregister[0] & 0b00000011
+        print("fan interrupt = ", faninterrupt, " (", bin(faninterrupt), ")")
+        return faninterrupt
 
 
