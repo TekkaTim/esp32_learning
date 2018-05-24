@@ -193,7 +193,11 @@ while True:
   print("Fan 2 RPM =",fan2_rpm)
 
   alert_status = p_alert()
-  print("Alert Status = ",alert_status)
+  if ( alert_status == 1 ):
+    print("Alert Status = Good")
+  else:
+    print("Alert Status = BAD")
+
   time.sleep(1)
   # ASSESS TEMPERATURE VS FAN DATA
   #  rpm_rate_required=0
